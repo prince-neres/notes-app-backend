@@ -5,11 +5,13 @@ import json
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jwt)
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
 # Coonfigurações da API
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://prince:val44@localhost/notes_app'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 app.config['SECRET_KEY'] = os.urandom(12)
 app.config['JWT_SECRET_KEY'] = 'JWT_SECRET_KEY%#!@'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
