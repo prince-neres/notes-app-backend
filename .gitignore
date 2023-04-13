@@ -1,0 +1,15 @@
+/node_modules
+/venv
+/.pnp
+.pnp.js
+/coverage
+/build
+/.vscode
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+/__pycache__
+/users.db
+/venv
