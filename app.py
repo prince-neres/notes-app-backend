@@ -5,8 +5,7 @@ import json
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jwt)
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-load_dotenv()
+
 
 app = Flask(__name__)
 

@@ -11,7 +11,6 @@ Jinja2==3.0.3
 MarkupSafe==2.0.1
 psycopg2-binary==2.9.5
 PyJWT==2.3.0
-python-dotenv==1.0.0
 six==1.16.0
 SQLAlchemy==1.4.28
 Werkzeug==2.0.2
