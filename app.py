@@ -1,8 +1,10 @@
 from flask import Flask, make_response, jsonify, request
 from flask_cors import CORS
+from flask_migrate import Migrate
 import os
 import json
-from flask_jwt_extended import (JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jwt)
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jwt)
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 
@@ -18,6 +20,7 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 blacklist_jwt = set()
 
 
@@ -50,7 +53,8 @@ def login():
         # Localiza usuário no Banco
         user = User.query.filter_by(email=content['email']).first()
 
-        error_data = {'message': 'Incorrect email or password', 'code': 'Error'}
+        error_data = {
+            'message': 'Incorrect email or password', 'code': 'Error'}
         # Checa se há email no Banco
         if user is None:
             return make_response(jsonify(error_data), 404)
@@ -92,10 +96,12 @@ def registration():
             db.session.add(notes)
             db.session.commit()
         except:
-            data = {'message': 'This email is already registered in the system', 'code': 'ERROR'}
+            data = {
+                'message': 'This email is already registered in the system', 'code': 'ERROR'}
             return make_response(jsonify(data), 400)
 
-        data = {'message': 'Created', 'code': 'SUCCESS', 'accessToken': create_access_token(identity=content['email'])}
+        data = {'message': 'Created', 'code': 'SUCCESS',
+                'accessToken': create_access_token(identity=content['email'])}
         return make_response(jsonify(data), 201)
     except:
         data = {'message': 'Error', 'code': 'ERROR'}
@@ -106,9 +112,11 @@ def registration():
 @app.route('/api/recovery', methods=['POST'])
 def password_recovery():
     try:
-        content = json.loads(request.data.decode())  # get the data received in a Flask request
+        # get the data received in a Flask request
+        content = json.loads(request.data.decode())
 
-        user = User.query.filter_by(email=content['email']).first()  # get user from db
+        user = User.query.filter_by(
+            email=content['email']).first()  # get user from db
 
         error_data = {'message': 'Incorrect email', 'code': 'Error'}
 
@@ -122,7 +130,8 @@ def password_recovery():
             return make_response(jsonify(error_data), 404)
 
         # Retorna senha
-        data = {'message': 'Login', 'code': 'SUCCESS', 'password': user.password}  
+        data = {'message': 'Login', 'code': 'SUCCESS',
+                'password': user.password}
         return make_response(jsonify(data), 200)
     except Exception as e:
         print(e)
@@ -166,7 +175,7 @@ def add_note():
         # Pega dados da requisição
         content = json.loads(request.data.decode())
         # Localiza usuário da requisição
-        current_user = get_jwt_identity() 
+        current_user = get_jwt_identity()
         user_notes = Notes.query.filter_by(email=current_user).first()
 
         new_notes = [content]
@@ -190,15 +199,40 @@ def delete_note():
     try:
         # Pega dados da requisição
         content = json.loads(request.data.decode())
-        current_user = get_jwt_identity() 
+        current_user = get_jwt_identity()
         # Localiza usuário da requisição
         user_notes = Notes.query.filter_by(email=current_user).first()
-        new_notes = list(filter(lambda item: item != content, user_notes.notes))  # filter note
+        new_notes = list(filter(lambda item: item != content,
+                         user_notes.notes))  # filter note
 
         user_notes.notes = new_notes
         db.session.commit()
 
         data = {'message': 'Deleted', 'code': 'SUCCESS'}
+        return make_response(jsonify(data), 200)
+    except:
+        data = {'message': 'Error', 'code': 'ERROR'}
+        return make_response(jsonify(data), 400)
+
+
+@app.route('/api/save/note', methods=['POST'])
+@jwt_required()
+def save_note():
+    try:
+        # Pega dados da requisição
+        content = json.loads(request.data.decode())
+        # Localiza usuário da requisição
+        current_user = get_jwt_identity()
+        user_notes = Notes.query.filter_by(email=current_user).first()
+
+        new_notes = [content]
+        for item in user_notes.notes:
+            new_notes.append(item)
+
+        user_notes.notes = new_notes
+        db.session.commit()
+
+        data = {'message': 'Added', 'code': 'SUCCESS'}
         return make_response(jsonify(data), 200)
     except:
         data = {'message': 'Error', 'code': 'ERROR'}
